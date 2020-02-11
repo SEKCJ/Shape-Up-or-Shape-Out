@@ -77,7 +77,6 @@ class Shape {
             this.prop_width = this.border_right;
             let css_array = {
                 'position': 'absolute',
-
                 'top': this.yVal,
                 'left': this.xVal,
                 'width': 0,
