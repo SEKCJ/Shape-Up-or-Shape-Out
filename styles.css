@@ -17,3 +17,16 @@
     background-color: #5B79B1;
     color: #f5f5f5;
 }
+
+.Circle-shape {
+    background-color: lightcoral;
+    border-radius: 50%;
+}
+
+.Square-shape{
+    background-color:lightblue;
+}
+
+.Rectangle-shape{
+    background-color: lightgreen;
+}
