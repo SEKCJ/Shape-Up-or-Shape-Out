@@ -3,18 +3,17 @@ $(document).ready(() => {
     let canvas_width = $('.canvas').width();
     let canvas_height = $('.canvas').height();
 
-
     $('#add-square').click(() => {
         let square_length = $('#Square_length').val();
         if (square_length !== "") {
-            new Square(pos.left, pos.top, canvas_width, canvas_height, square_length)
+            new Square(pos.left, canvas_width, canvas_height, square_length)
         }
     })
 
     $('#add-circle').click(() => {
         let circle_radius = $('#Circle_radius').val();
         if (circle_radius !== "" && isNaN(circle_radius) !== true) {
-            new Circle(pos.left, pos.top, canvas_width, canvas_height, circle_radius)
+            new Circle(pos.left, canvas_width, canvas_height, circle_radius)
         }
     })
 
@@ -23,14 +22,14 @@ $(document).ready(() => {
         let rectangle_width = $('#Rectangle_width').val();
         if (rectangle_height !== "" && rectangle_width !== "") {
 
-            new Rectangle(pos.left, pos.top, canvas_width, canvas_height, rectangle_width, rectangle_height);
+            new Rectangle(pos.left, canvas_width, canvas_height, rectangle_width, rectangle_height);
         }
     })
 
     $('#add-triangle').click(() => {
         let triangle_height = $('#Triangle_height').val();
         if (triangle_height !== "") {
-            new Triangle(pos.left, pos.top, canvas_width, canvas_height, triangle_height);
+            new Triangle(pos.left, canvas_width, canvas_height, triangle_height);
         }
     })
 })
@@ -39,19 +38,12 @@ const margin_left = 64;
 let randVal = (Max, Min) => Math.floor(Math.random() * (Max - Min)) + Min;
 
 class Shape {
-    constructor(x_coor, y_coor, max_width, max_height) {
-        this.x_coor = x_coor;
-        this.y_coor = y_coor;
-        this.max_width = max_width;
-        this.max_height = max_height;
-        this.bound_definition();
-    }
-
-    bound_definition() {
+    constructor(x_coor, max_width, max_height) {
+        this.x_coor = parseInt(x_coor, 10);
         this.x_start = this.x_coor + margin_left;
-        this.y_start = this.y_coor;
-        this.max_bound_x = this.x_start + this.max_width;
-        this.max_bound_y = this.max_height + this.y_start;
+        this.max_width = parseInt(max_width, 10);
+        this.max_height = max_height;
+
     }
 
     spawn_div(width, height, border_right = 0, border_bottom = 0) {
@@ -59,8 +51,9 @@ class Shape {
         this.object_height = parseInt(height, 10);
         this.border_right = parseInt(border_right, 10);
         this.border_bottom = parseInt(border_bottom, 10);
+        console.log(this.max_width)
 
-        if (this.object_width > this.max_bound_x || this.object_height > this.max_bound_y || this.border_right > this.max_bound_x || this.border_bottom > this.max_bound_y) {
+        if (this.object_width > this.max_width || this.object_height > this.max_height || this.border_right > this.max_width || this.border_bottom > this.max_height) {
             alert('Object size too big')
         } else {
             this.isTriangle();
@@ -69,13 +62,13 @@ class Shape {
         }
     };
 
+
     isTriangle() {
-        this.xVal = randVal(this.max_bound_x, this.x_start);
-        this.yVal = randVal(this.max_bound_y, this.y_start);
+        this.xVal = randVal(this.max_width, this.x_start);
+        this.yVal = randVal(this.max_height, 0);
+        let css_array = {}
         if (this.border_right !== 0 && this.border_bottom !== 0) {
-            this.prop_height = this.border_bottom;
-            this.prop_width = this.border_right;
-            let css_array = {
+            css_array = {
                 'position': 'absolute',
                 'top': this.yVal,
                 'left': this.xVal,
@@ -84,45 +77,43 @@ class Shape {
                 'border-right': `${this.border_right}px solid transparent`,
                 'border-bottom': `${this.border_bottom}px solid #FFFF66`,
             }
-            this.div = $('<div></div>')
-            $('body').append(this.div);
-            $(this.div).css(css_array);
         } else {
-            let css_array = {
+            css_array = {
                 'position': 'absolute',
                 'top': this.yVal,
                 'left': this.xVal,
                 'width': this.object_width,
                 'height': this.object_height,
             }
-            this.div = $('<div></div>');
-            $(this.div).css(css_array);
-            $(this.div).css('cursor', 'pointer');
-            $('body').append(this.div);
         }
+        this.div = $('<div></div>')
+        $('.canvas').append(this.div);
+        $(this.div).css(css_array);
+        $(this.div).css('cursor', 'pointer');
     }
 
     check_bound() {
-        if ((this.xVal + this.object_width) >= this.max_bound_x) {
+        if ((this.object_width + this.xVal) > (this.max_width + this.x_start)) {
+            console.log('vertical overlap')
+            let difference = (this.object_width + this.xVal) - (this.max_width + this.x_start)
+            $(this.div).css('left', (this.xVal - difference));
+        }
+        if ((this.object_height + this.yVal) > (this.max_height)) {
             console.log('horizontal overlap')
-            let difference_x = (this.xVal + this.object_width) - this.max_bound_x;
-            $(this.div).css('left', (this.xVal - difference_x));
+            let difference = (this.object_height + this.yVal) - this.max_height;
+            $(this.div).css('top', (this.yVal - difference))
         }
-        if ((this.yVal + this.object_height) >= this.max_bound_y) {
-            console.log('vertical overlap');
-            let difference_y = (this.yVal + this.object_height) - this.max_bound_y;
-            $(this.div).css('top', (this.yVal - difference_y));
+        if ((this.border_right + this.xVal) > (this.max_width + this.x_start)) {
+            console.log('vertical overlap')
+            let difference = (this.border_right + this.xVal) - (this.max_width + this.x_start)
+            $(this.div).css('left', (this.xVal - difference));
         }
-        if ((this.xVal + this.border_right) >= this.max_bound_x) {
+        if ((this.border_bottom + this.yVal) > this.max_height) {
             console.log('horizontal overlap')
-            let difference_x = (this.xVal + this.border_right) - this.max_bound_x;
-            $(this.div).css('left', (this.xVal - difference_x));
+            let difference = (this.border_bottom + this.yVal) - this.max_height;
+            $(this.div).css('top', (this.yVal - difference))
         }
-        if ((this.yVal + this.border_bottom) >= this.max_bound_y) {
-            console.log('vertical overlap');
-            let difference_y = (this.yVal + this.border_bottom) - this.max_bound_y;
-            $(this.div).css('top', (this.yVal - difference_y));
-        }
+
     }
 
     describe() {
@@ -166,13 +157,12 @@ class Shape {
         $('#prop_area').val(this.prop_area);
         $('#prop_perimeter').val(this.prop_perimeter);
         $('#prop_radius').val(this.prop_radius);
-
     }
 }
 
 class Circle extends Shape {
-    constructor(x_coor, y_coor, max_width, max_height, radius) {
-        super(x_coor, y_coor, max_width, max_height)
+    constructor(x_coor, max_width, max_height, radius) {
+        super(x_coor, max_width, max_height)
         this.radius = radius;
         this.addCircle();
     };
@@ -185,8 +175,8 @@ class Circle extends Shape {
 }
 
 class Triangle extends Shape {
-    constructor(x_coor, y_coor, max_width, max_height, height) {
-        super(x_coor, y_coor, max_width, max_height)
+    constructor(x_coor, max_width, max_height, height) {
+        super(x_coor, max_width, max_height)
         this.triangle_height = height;
         this.addTriangle();
     };
@@ -196,12 +186,11 @@ class Triangle extends Shape {
         $(this.div).addClass('Triangle-shape');
         this.check_bound();
     }
-
 }
 
 class Rectangle extends Shape {
-    constructor(x_coor, y_coor, max_width, max_height, width, height) {
-        super(x_coor, y_coor, max_width, max_height)
+    constructor(x_coor, max_width, max_height, width, height) {
+        super(x_coor, max_width, max_height)
         this.width = width;
         this.height = height;
         this.addRectangle();
@@ -215,8 +204,8 @@ class Rectangle extends Shape {
 }
 
 class Square extends Shape {
-    constructor(x_coor, y_coor, max_width, max_height, side_length) {
-        super(x_coor, y_coor, max_width, max_height)
+    constructor(x_coor, max_width, max_height, side_length) {
+        super(x_coor, max_width, max_height)
         this.side_length = side_length;
         this.addSquare();
 
