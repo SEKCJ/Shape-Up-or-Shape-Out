@@ -5,7 +5,7 @@ $(document).ready(() => {
 
     $('#add-square').click(() => {
         let square_length = $('#Square_length').val();
-        if (square_length !== "") {
+        if (square_length !== "" && isNaN(square_length) !== true) {
             new Square(pos.left, canvas_width, canvas_height, square_length)
         }
     })
@@ -20,7 +20,7 @@ $(document).ready(() => {
     $('#add-rectangle').click(() => {
         let rectangle_height = $('#Rectangle_height').val();
         let rectangle_width = $('#Rectangle_width').val();
-        if (rectangle_height !== "" && rectangle_width !== "") {
+        if (rectangle_height !== "" && rectangle_width !== "" && isNaN(rectangle_height) !== true && isNaN(rectangle_width) !== true) {
 
             new Rectangle(pos.left, canvas_width, canvas_height, rectangle_width, rectangle_height);
         }
@@ -51,7 +51,6 @@ class Shape {
         this.object_height = parseInt(height, 10);
         this.border_right = parseInt(border_right, 10);
         this.border_bottom = parseInt(border_bottom, 10);
-        console.log(this.max_width)
 
         if (this.object_width > this.max_width || this.object_height > this.max_height || this.border_right > this.max_width || this.border_bottom > this.max_height) {
             alert('Object size too big')
@@ -62,12 +61,13 @@ class Shape {
         }
     };
 
-
     isTriangle() {
-        this.xVal = randVal(this.max_width, this.x_start);
-        this.yVal = randVal(this.max_height, 0);
         let css_array = {}
         if (this.border_right !== 0 && this.border_bottom !== 0) {
+            let param_x = (this.max_width + this.x_start) - this.border_right;
+            let param_y = this.max_height - this.border_bottom
+            this.xVal = randVal(param_x, this.x_start);
+            this.yVal = randVal(param_y, 0);
             css_array = {
                 'position': 'absolute',
                 'top': this.yVal,
@@ -78,6 +78,10 @@ class Shape {
                 'border-bottom': `${this.border_bottom}px solid #FFFF66`,
             }
         } else {
+            let param_x = (this.max_width + this.x_start) - this.object_width;
+            let param_y = this.max_height - this.object_height;
+            this.xVal = randVal(param_x, this.x_start);
+            this.yVal = randVal(param_y, 0);
             css_array = {
                 'position': 'absolute',
                 'top': this.yVal,
@@ -90,30 +94,6 @@ class Shape {
         $('.canvas').append(this.div);
         $(this.div).css(css_array);
         $(this.div).css('cursor', 'pointer');
-    }
-
-    check_bound() {
-        if ((this.object_width + this.xVal) > (this.max_width + this.x_start)) {
-            console.log('vertical overlap')
-            let difference = (this.object_width + this.xVal) - (this.max_width + this.x_start)
-            $(this.div).css('left', (this.xVal - difference));
-        }
-        if ((this.object_height + this.yVal) > (this.max_height)) {
-            console.log('horizontal overlap')
-            let difference = (this.object_height + this.yVal) - this.max_height;
-            $(this.div).css('top', (this.yVal - difference))
-        }
-        if ((this.border_right + this.xVal) > (this.max_width + this.x_start)) {
-            console.log('vertical overlap')
-            let difference = (this.border_right + this.xVal) - (this.max_width + this.x_start)
-            $(this.div).css('left', (this.xVal - difference));
-        }
-        if ((this.border_bottom + this.yVal) > this.max_height) {
-            console.log('horizontal overlap')
-            let difference = (this.border_bottom + this.yVal) - this.max_height;
-            $(this.div).css('top', (this.yVal - difference))
-        }
-
     }
 
     describe() {
@@ -148,9 +128,6 @@ class Shape {
                 this.prop_perimeter = this.prop_width * 4;
                 this.prop_radius = "N/A"
                 break;
-            default:
-                this.prop_area = undefined;
-                this.prop_perimeter = undefined;
         }
         $('#prop_height').val(this.prop_height);
         $('#prop_width').val(this.prop_width);
@@ -170,7 +147,6 @@ class Circle extends Shape {
     addCircle() {
         this.spawn_div(this.radius, this.radius);
         $(this.div).addClass('Circle-shape')
-        this.check_bound();
     }
 }
 
@@ -184,7 +160,6 @@ class Triangle extends Shape {
     addTriangle() {
         this.spawn_div(0, 0, this.triangle_height, this.triangle_height)
         $(this.div).addClass('Triangle-shape');
-        this.check_bound();
     }
 }
 
@@ -199,7 +174,6 @@ class Rectangle extends Shape {
     addRectangle() {
         this.spawn_div(this.width, this.height);
         $(this.div).addClass('Rectangle-shape')
-        this.check_bound()
     }
 }
 
@@ -214,7 +188,6 @@ class Square extends Shape {
     addSquare() {
         this.spawn_div(this.side_length, this.side_length);
         $(this.div).addClass('Square-shape');
-        this.check_bound();
     }
 }
 
