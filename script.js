@@ -21,7 +21,6 @@ $(document).ready(() => {
         let rectangle_height = $('#Rectangle_height').val();
         let rectangle_width = $('#Rectangle_width').val();
         if (rectangle_height !== "" && rectangle_width !== "" && isNaN(rectangle_height) !== true && isNaN(rectangle_width) !== true) {
-
             new Rectangle(pos.left, canvas_width, canvas_height, rectangle_width, rectangle_height);
         }
     })
@@ -39,11 +38,10 @@ let randVal = (Max, Min) => Math.floor(Math.random() * (Max - Min)) + Min;
 
 class Shape {
     constructor(x_coor, max_width, max_height) {
-        this.x_coor = parseInt(x_coor, 10);
+        this.x_coor = x_coor;
         this.x_start = this.x_coor + margin_left;
-        this.max_width = parseInt(max_width, 10);
+        this.max_width = max_width;
         this.max_height = max_height;
-
     }
 
     spawn_div(width, height, border_right = 0, border_bottom = 0) {
